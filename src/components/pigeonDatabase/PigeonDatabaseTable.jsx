@@ -350,7 +350,7 @@ const PigeonTable = ({
                         Breeder Rating
                       </TableHead>
                       <TableHead className="text-white">
-                        Racing Rating
+                        Racer Rating
                       </TableHead>
                       <TableHead className="text-white">Verified</TableHead>
                       <TableHead className="text-white">Status</TableHead>
