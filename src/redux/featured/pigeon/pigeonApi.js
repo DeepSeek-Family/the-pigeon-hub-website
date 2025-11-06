@@ -60,7 +60,7 @@ const pigeonApi = api.injectEndpoints({
       query: (searchTerm) => {
         // Directly use the searchTerm as query parameter
         return {
-          url: `/pigeon/searchAll?searchTerm=${encodeURIComponent(searchTerm)}`,
+          url: `/pigeon/searchAllPigeon?searchTerm=${encodeURIComponent(searchTerm)}`,
           method: "GET",
         };
       },
