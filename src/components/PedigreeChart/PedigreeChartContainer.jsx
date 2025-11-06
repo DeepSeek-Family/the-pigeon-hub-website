@@ -301,16 +301,14 @@ const PigeonNode = ({ data }) => {
       </div>
 
       <div className="overflow-hidden h-full flex flex-col">
-        <div className="flex items-center justify-start gap-2  overflow-hidden">
+        <div className="flex items-center justify-start gap-2 space-y-2">
           {data.name && (
-            <h3 className="font-bold mt-1 text-black truncate w-full">
-              {data.name}
-            </h3>
+            <h3 className="font-bold text-black truncate">{data.name}</h3>
           )}
         </div>
-        <div className="flex items-center justify-start gap-2 mb-1 overflow-hidden">
+        <div className="flex items-center justify-start gap-2">
           {data.owner && (
-            <div className="flex items-center gap-2 text-xl italic text-black min-w-0 flex-1">
+            <div className="flex items-center gap-2 text-xl italic text-black">
               <span className="truncate">{data.owner}</span>
             </div>
           )}
@@ -327,19 +325,15 @@ const PigeonNode = ({ data }) => {
           )}
         </div>
 
-        {data.colorName && (
-          <div className="overflow-hidden mb-1">
-            <h2 className="text-black truncate w-full">{data.colorName}</h2>
-          </div>
-        )}
+    {data.colorName && (
+  <div className="">
+    <h2 className=" text-black">{data.colorName}</h2>
+  </div>
+)}
 
         {data.description && (
-          <div className="overflow-hidden mb-1">
-            <h2
-              className={`text-black italic break-words ${textLimits.description}`}
-            >
-              {data?.description}
-            </h2>
+          <div className="">
+            <h2 className="text-black ">{data?.description?.slice(0, 650)}</h2>
           </div>
         )}
 
