@@ -415,7 +415,7 @@ export const exportPedigreeToPDF = async (
           3,
           1
         );
-        currentY += 1;
+        currentY += 0;
       }
 
       // Calculate available space for description and achievements
@@ -446,7 +446,7 @@ export const exportPedigreeToPDF = async (
             3,
             maxDescLines
           );
-          currentY += 2;
+          currentY += 0;
         }
       }
 
