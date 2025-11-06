@@ -1194,7 +1194,7 @@ Bought for USD 50,000`}
                 <div className="grid grid-cols-1 md:grid-cols-2 gap-4 gap-x-10">
                   <div>
                     <label className="block text-sm font-medium text-gray-700 mb-2">
-                      Racing Rating
+                      Racer Rating
                     </label>
                     <Select
                       key={watch("racingRating")} // Add key
@@ -1204,7 +1204,7 @@ Bought for USD 50,000`}
                       }
                     >
                       <SelectTrigger className="w-full px-3 py-[25px] border border-gray-300 rounded-lg">
-                        <SelectValue placeholder="Select Racing Rating" />
+                        <SelectValue placeholder="Select Racer Rating" />
                       </SelectTrigger>
                       <SelectContent>
                         {Array.from({ length: 99 }, (_, i) => i + 1)

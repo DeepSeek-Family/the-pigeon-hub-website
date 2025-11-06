@@ -52,7 +52,6 @@ import { getImageUrl } from "../share/imageUrl";
 const PigeonNode = ({ data }) => {
   const countryCode = data.country ? getCode(data.country) : null;
   console.log("color", data.color);
- 
 
   // Check if this is the subject node (generation 0)
   const isSubject = data.generation === 0;
@@ -114,17 +113,26 @@ const PigeonNode = ({ data }) => {
   const getTextLimits = (generation) => {
     switch (generation) {
       case 0:
-        return { description: 'line-clamp-[20]', achievements: 'line-clamp-[15]' };
+        return {
+          description: "line-clamp-[20]",
+          achievements: "line-clamp-[15]",
+        };
       case 1:
-        return { description: 'line-clamp-[20]', achievements: 'line-clamp-[15]' };
+        return {
+          description: "line-clamp-[20]",
+          achievements: "line-clamp-[15]",
+        };
       case 2:
-        return { description: 'line-clamp-[12]', achievements: 'line-clamp-[10]' };
+        return {
+          description: "line-clamp-[12]",
+          achievements: "line-clamp-[10]",
+        };
       case 3:
-        return { description: 'line-clamp-4', achievements: 'line-clamp-3' };
+        return { description: "line-clamp-4", achievements: "line-clamp-3" };
       case 4:
-        return { description: 'line-clamp-1', achievements: 'line-clamp-1' };
+        return { description: "line-clamp-1", achievements: "line-clamp-1" };
       default:
-        return { description: 'line-clamp-1', achievements: 'line-clamp-1' };
+        return { description: "line-clamp-1", achievements: "line-clamp-1" };
     }
   };
 
@@ -295,7 +303,9 @@ const PigeonNode = ({ data }) => {
       <div className="overflow-hidden h-full flex flex-col">
         <div className="flex items-center justify-start gap-2  overflow-hidden">
           {data.name && (
-            <h3 className="font-bold mt-1 text-black truncate w-full">{data.name}</h3>
+            <h3 className="font-bold mt-1 text-black truncate w-full">
+              {data.name}
+            </h3>
           )}
         </div>
         <div className="flex items-center justify-start gap-2 mb-1 overflow-hidden">
@@ -317,21 +327,28 @@ const PigeonNode = ({ data }) => {
           )}
         </div>
 
-        {data.description && (
-          <div className="overflow-hidden mb-1">
-            <h2 className={`text-black break-words ${textLimits.description}`}>
-              {data?.description}
-            </h2>
-          </div>
-        )}
         {data.colorName && (
           <div className="overflow-hidden mb-1">
             <h2 className="text-black truncate w-full">{data.colorName}</h2>
           </div>
         )}
+
+        {data.description && (
+          <div className="overflow-hidden mb-1">
+            <h2
+              className={`text-black italic break-words ${textLimits.description}`}
+            >
+              {data?.description}
+            </h2>
+          </div>
+        )}
+
         {data.achievements && (
-          <div className="overflow-hidden">
-            <h2 className={`text-black break-words ${textLimits.achievements}`} style={{ wordBreak: "break-word", overflowWrap: "break-word" }}>
+          <div className="flex items-start gap-1">
+            <h2
+              className="text-black whitespace-pre-line break-words max-w-[250px] overflow-hidden"
+              style={{ wordBreak: "break-word", overflowWrap: "break-word" }}
+            >
               {data.achievements}
             </h2>
           </div>
@@ -440,7 +457,13 @@ export default function PigeonPedigreeChart() {
   const exportToPDFWithGenerations = useCallback(
     async (genCount) => {
       try {
-        await exportPedigreeToPDF(nodes, edges, pedigreeData, profileData, genCount);
+        await exportPedigreeToPDF(
+          nodes,
+          edges,
+          pedigreeData,
+          profileData,
+          genCount
+        );
       } catch (error) {
         alert("Error exporting the selected generations. Please try again.");
       }
@@ -546,21 +569,19 @@ export default function PigeonPedigreeChart() {
       <div className="relative">
         <div className="absolute bottom-40 2xl:bottom-40 left-8 2xl:left-30 text-black">
           <p className="text-accent-foreground font-bold">
-            {profileData?.name.slice(0,24)}
+            {profileData?.name.slice(0, 24)}
           </p>
           {profileData?.contact && (
             <p>
-             
               <span className="text-accent-foreground font-bold text-[12px]">
-                {profileData?.contact.slice(0,16)}
+                {profileData?.contact.slice(0, 16)}
               </span>
             </p>
           )}
           {profileData?.email && (
             <p>
-            
               <span className="text-accent-foreground font-bold text-[12px]">
-                {profileData?.email.slice(0,24)}
+                {profileData?.email.slice(0, 24)}
               </span>
             </p>
           )}
@@ -568,7 +589,8 @@ export default function PigeonPedigreeChart() {
       </div>
       <div className="w-full flex justify-center">
         <h2 className="text-accent font-bold  mb-10">
-          Generated by <span className="text-accent-foreground">ThePigeonHub.Com</span>
+          Generated by{" "}
+          <span className="text-accent-foreground">ThePigeonHub.Com</span>
         </h2>
       </div>
     </div>

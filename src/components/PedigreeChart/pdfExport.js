@@ -144,7 +144,6 @@ export const exportPedigreeToPDF = async (
 
     // Helper: Load country flag with caching
 
-
     // Helper: Load country flag (accepts country name or 2-letter code)
     const loadCountryFlag = async (countryNameOrCode) => {
       try {
@@ -160,15 +159,12 @@ export const exportPedigreeToPDF = async (
           }
         }
 
-
         // Fallback: use first 2 characters if code not found
         if (!code && typeof countryNameOrCode === "string") {
           code = countryNameOrCode.substring(0, 2);
         }
 
-
         if (!code) return null;
-
 
         const flagUrl = `https://flagcdn.com/24x18/${code.toLowerCase()}.png`;
         return await loadImageAsBase64(flagUrl);
@@ -177,7 +173,6 @@ export const exportPedigreeToPDF = async (
         return null;
       }
     };
-
 
     // Helper: Draw connection line from subject to parents
     const drawConnectionFromSubject = (
@@ -261,7 +256,6 @@ export const exportPedigreeToPDF = async (
       let headerX = leftMargin;
 
       // Country flag image
-  
 
       // Country flag image (use country name or code, loadCountryFlag will resolve to ISO code)
       if (data.country) {
@@ -276,10 +270,6 @@ export const exportPedigreeToPDF = async (
         }
       }
 
-
-
-
-
       // Birth year
       if (data.birthYear) {
         const yearText = String(data.birthYear).slice(-2);
@@ -290,7 +280,7 @@ export const exportPedigreeToPDF = async (
       // Ring number (RED)
       if (data.ringNumber) {
         pdf.setTextColor(195, 55, 57);
-        pdf.setFont("helvetica", "bold");
+        pdf.setFont("helvetica");
         pdf.text(String(data.ringNumber), headerX, currentY);
       }
 
@@ -409,27 +399,7 @@ export const exportPedigreeToPDF = async (
         }
 
         // Advance currentY to leave a small gap after owner block
-        currentY += 4;
-      }
-
-      // === DESCRIPTION ===
-      if (data.description && height > 40 && currentY < y + height - 15) {
-        pdf.setFontSize(6);
-        pdf.setFont("helvetica", "normal");
-        pdf.setTextColor(0, 0, 0);
-        const remainingSpace = y + height - currentY - 12;
-        const maxDescLines = Math.floor(remainingSpace / 3);
-        if (maxDescLines > 0) {
-          currentY = addWrappedText(
-            String(data.description).substring(0, 300),
-            leftMargin,
-            currentY,
-            contentWidth,
-            3,
-            maxDescLines
-          );
-          currentY += 1;
-        }
+        currentY += 3;
       }
 
       // === COLOR NAME ===
@@ -445,29 +415,61 @@ export const exportPedigreeToPDF = async (
           3,
           1
         );
+        currentY += 1;
       }
 
-      // === ACHIEVEMENTS ===
-      if (data.achievements && currentY < y + height - 8) {
+      // Calculate available space for description and achievements
+      const availableSpace = y + height - currentY - 3;
+      const hasDescription =
+        data.description && data.description.trim().length > 0;
+      const hasAchievements =
+        data.achievements && data.achievements.trim().length > 0;
+
+      // === DESCRIPTION ===
+      if (hasDescription && availableSpace > 10) {
         pdf.setFontSize(6);
-        pdf.setFont("helvetica", "normal");
+        pdf.setFont("helvetica", "italic");
         pdf.setTextColor(0, 0, 0);
 
-        let achievementsX = leftMargin;
-        pdf.text("", achievementsX, currentY);
+        // If no achievements, use more space for description
+        const descriptionSpace = hasAchievements
+          ? availableSpace * 0.5
+          : availableSpace - 5;
+        const maxDescLines = Math.floor(descriptionSpace / 3);
 
-        pdf.setFontSize(5.5);
-        const remainingSpace = y + height - currentY - 2;
-        const maxAchvLines = Math.floor(remainingSpace / 2.5);
-        if (maxAchvLines > 0) {
+        if (maxDescLines > 0) {
           currentY = addWrappedText(
-            String(data.achievements).substring(0, 200),
+            String(data.description),
             leftMargin,
             currentY,
             contentWidth,
-            2.5,
-            maxAchvLines
+            3,
+            maxDescLines
           );
+          currentY += 2;
+        }
+      }
+
+      // === ACHIEVEMENTS ===
+      if (hasAchievements) {
+        const remainingSpace = y + height - currentY - 2;
+
+        if (remainingSpace > 5) {
+          pdf.setFontSize(5.5);
+          pdf.setFont("helvetica", "normal");
+          pdf.setTextColor(0, 0, 0);
+
+          const maxAchvLines = Math.floor(remainingSpace / 2.5);
+          if (maxAchvLines > 0) {
+            currentY = addWrappedText(
+              String(data.achievements),
+              leftMargin,
+              currentY,
+              contentWidth,
+              2.5,
+              maxAchvLines
+            );
+          }
         }
       }
     };
