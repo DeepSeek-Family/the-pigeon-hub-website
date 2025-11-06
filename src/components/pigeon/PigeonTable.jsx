@@ -53,7 +53,7 @@ const PigeonTable = ({
   const [deletePigeon] = useDeletePigeonMutation();
   const { data: userData } = useMyProfileQuery();
   const userId = userData?._id;
-console.log(data)
+  console.log(data);
   // Sorting state
   const [sortConfig, setSortConfig] = useState({
     key: null,
@@ -96,14 +96,14 @@ console.log(data)
   };
 
   // Sort pigeons
-// Sort pigeons
+  // Sort pigeons
   const sortedPigeons = React.useMemo(() => {
     if (!pigeons || pigeons.length === 0) {
       return [];
     }
-    
+
     let sortedData = [...pigeons];
-    
+
     if (sortConfig.key && sortConfig.direction) {
       sortedData.sort((a, b) => {
         let aValue, bValue;
@@ -125,7 +125,7 @@ console.log(data)
         return 0;
       });
     }
-    
+
     return sortedData;
   }, [pigeons, sortConfig.key, sortConfig.direction]);
 
@@ -349,7 +349,9 @@ console.log(data)
                                     height={18}
                                     className="w-5 h-4 rounded-sm"
                                   />
-                                  <p className="text-[#B0B6A4]">{countryCode}</p>
+                                  <p className="text-[#B0B6A4]">
+                                    {countryCode}
+                                  </p>
                                 </div>
                               )
                             );
@@ -401,15 +403,16 @@ console.log(data)
                               </Button>
                             </DropdownMenuTrigger>
                             <DropdownMenuContent align="end" className="w-48">
-                              {pigeon?.user?._id === userId && (
-                                <DropdownMenuItem
-                                  onClick={() => onEdit(pigeon._id)}
-                                  className="cursor-pointer"
-                                >
-                                  <Edit className="h-4 w-4 mr-2" />
-                                  Edit Pigeon
-                                </DropdownMenuItem>
-                              )}
+                              {pigeon?.user?._id === userId &&
+                                !pigeon?.iconic && (
+                                  <DropdownMenuItem
+                                    onClick={() => onEdit(pigeon._id)}
+                                    className="cursor-pointer"
+                                  >
+                                    <Edit className="h-4 w-4 mr-2" />
+                                    Edit Pigeon
+                                  </DropdownMenuItem>
+                                )}
 
                               <DropdownMenuItem
                                 onClick={() => handleView(pigeon._id)}
