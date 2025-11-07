@@ -60,7 +60,9 @@ const pigeonApi = api.injectEndpoints({
       query: (searchTerm) => {
         // Directly use the searchTerm as query parameter
         return {
-          url: `/pigeon/searchAllPigeon?searchTerm=${encodeURIComponent(searchTerm)}`,
+          url: `/pigeon/searchAllPigeon?searchTerm=${encodeURIComponent(
+            searchTerm
+          )}`,
           method: "GET",
         };
       },
@@ -186,14 +188,28 @@ const pigeonApi = api.injectEndpoints({
       },
       invalidatesTags: ["Pigeon"],
     }),
-    
+
     pigeonAddMyLoftOverview: builder.mutation({
       query: (body) => ({
         url: "/pigeon/add",
         method: "POST",
-        body, 
+        body,
       }),
       invalidatesTags: ["Pigeon"],
+    }),
+
+    checkDuplicatePigeon: builder.query({
+      query: ({ ringNumber, country, birthYear }) => {
+        const params = new URLSearchParams();
+        if (ringNumber) params.append("ringNumber", ringNumber);
+        if (country) params.append("country", country);
+        if (birthYear) params.append("birthYear", birthYear);
+
+        return {
+          method: "GET",
+          url: `/pigeon/check-duplicate?${params.toString()}`,
+        };
+      },
     }),
   }),
 });
@@ -218,6 +234,7 @@ export const {
   useLazySearchPigeonsQuery,
   useLazyExportPigeonsQuery,
   usePigeonAddMyLoftOverviewMutation,
+  useLazyCheckDuplicatePigeonQuery,
 } = pigeonApi;
 
 export default pigeonApi;

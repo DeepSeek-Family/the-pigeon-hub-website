@@ -14,14 +14,15 @@ export const api = createApi({
       return headers;
     },
   }),
-  tagTypes: ["User",  "Package", "Subscription", "Access", "Pigeon","Notification","Contact"], 
-
-
-
-
+  tagTypes: [
+    "User",
+    "Package",
+    "Subscription",
+    "Access",
+    "Pigeon",
+    "Notification",
+    "Contact",
+  ],
 
   endpoints: () => ({}),
 });
-
-
-

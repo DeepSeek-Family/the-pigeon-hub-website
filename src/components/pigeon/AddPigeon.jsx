@@ -1,12 +1,6 @@
 "use client";
 
-import React, { useState, useEffect, useRef } from "react";
-import { useRouter, useParams, useSearchParams } from "next/navigation";
-import { useForm } from "react-hook-form";
 import { Button } from "@/components/ui/button";
-import { Input } from "@/components/ui/input";
-import { Label } from "@/components/ui/label";
-import { Textarea } from "@/components/ui/textarea";
 import {
   Select,
   SelectContent,
@@ -14,26 +8,26 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select";
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
-import { Switch } from "@/components/ui/switch";
-import { ArrowLeft, Plus, X, Upload, ChevronDown } from "lucide-react";
-import { toast } from "sonner";
-import {
-  useCreatePigeonMutation,
-  useUpdatePigeonMutation,
-  useGetPigeonPackagesQuery,
-  useGetSinglePigeonQuery,
-  useGetAllPigeonSearchQuery,
-} from "@/redux/featured/pigeon/pigeonApi";
 import {
   useGetAllPigeonNameQuery,
   useGetBreederQuery,
 } from "@/redux/featured/pigeon/breederApi";
-import Image from "next/image";
-import { getImageUrl } from "../share/imageUrl";
+import {
+  useCreatePigeonMutation,
+  useGetAllPigeonSearchQuery,
+  useGetPigeonPackagesQuery,
+  useGetSinglePigeonQuery,
+  useLazyCheckDuplicatePigeonQuery,
+  useUpdatePigeonMutation,
+} from "@/redux/featured/pigeon/pigeonApi";
 import { getNames } from "country-list";
+import { ChevronDown } from "lucide-react";
+import { useParams, useRouter, useSearchParams } from "next/navigation";
+import { useEffect, useRef, useState } from "react";
+import { Controller, useForm } from "react-hook-form";
+import { toast } from "sonner";
+import { getImageUrl } from "../share/imageUrl";
 import PigeonPhotosSlider from "./addPigeon/PigeonPhotoSlider";
-import { Controller } from "react-hook-form";
 
 const AddPigeonContainer = ({ pigeonId }) => {
   const params = useParams();
@@ -64,6 +58,11 @@ const AddPigeonContainer = ({ pigeonId }) => {
 
   const { data: fatherData } = useGetAllPigeonSearchQuery(fatherSearchTerm);
   const { data: motherData } = useGetAllPigeonSearchQuery(motherSearchTerm);
+
+  // Duplicate check API
+  const [checkDuplicate] = useLazyCheckDuplicatePigeonQuery();
+  const [duplicateError, setDuplicateError] = useState("");
+  const [isCheckingDuplicate, setIsCheckingDuplicate] = useState(false);
 
   const fatherList = (fatherData?.data || []).filter(
     (item) => item.gender === "Cock"
@@ -353,6 +352,83 @@ const AddPigeonContainer = ({ pigeonId }) => {
   // Get available pigeons for parent selection
   const availablePigeons = pigeonData?.data?.data || [];
 
+  // Watch form values for duplicate check
+  const ringNumber = watch("ringNumber");
+  const country = watch("country");
+  const birthYear = watch("birthYear");
+
+  // Duplicate check effect
+  useEffect(() => {
+    // Check if all three fields are filled
+    if (ringNumber && country && birthYear) {
+      setIsCheckingDuplicate(true);
+
+      // Debounce the API call
+      const timeoutId = setTimeout(async () => {
+        try {
+          const result = await checkDuplicate({
+            ringNumber,
+            country,
+            birthYear,
+          }).unwrap();
+
+          console.log("Duplicate check result:", result);
+
+          // Check if duplicate exists - API returns data nested inside result
+          if (result?.data?.isDuplicate) {
+            // In edit mode, check if it's the same pigeon being edited
+            if (
+              isEditMode &&
+              singlePigeon?.data?._id === result?.data?.pigeon?._id
+            ) {
+              setDuplicateError("");
+            } else {
+              setDuplicateError(
+                result?.data?.message ||
+                  "This pigeon already exists in the database."
+              );
+            }
+          } else {
+            setDuplicateError("");
+          }
+        } catch (error) {
+          console.error("Error checking duplicate:", error);
+          // Check if error response has duplicate info
+          if (error?.data?.data?.isDuplicate) {
+            if (
+              isEditMode &&
+              singlePigeon?.data?._id === error?.data?.data?.pigeon?._id
+            ) {
+              setDuplicateError("");
+            } else {
+              setDuplicateError(
+                error?.data?.data?.message ||
+                  "This pigeon already exists in the database."
+              );
+            }
+          } else {
+            setDuplicateError("");
+          }
+        } finally {
+          setIsCheckingDuplicate(false);
+        }
+      }, 300); // 300ms debounce for quick response
+
+      return () => clearTimeout(timeoutId);
+    } else {
+      // Clear error if any field is empty
+      setDuplicateError("");
+      setIsCheckingDuplicate(false);
+    }
+  }, [
+    ringNumber,
+    country,
+    birthYear,
+    checkDuplicate,
+    isEditMode,
+    singlePigeon,
+  ]);
+
   // Sync color pattern with form
   useEffect(() => {
     if (selectedColor && selectedPattern) {
@@ -416,7 +492,7 @@ const AddPigeonContainer = ({ pigeonId }) => {
             ? pigeon?.breeder?.loftName
             : pigeon?.breeder || "",
         color: pigeon.color || "",
-        gender: pigeon.gender ,
+        gender: pigeon.gender,
         status: pigeon.status || "",
         location: pigeon.location || "",
         notes: pigeon.notes || "",
@@ -477,6 +553,14 @@ const AddPigeonContainer = ({ pigeonId }) => {
   const onSubmit = async (data) => {
     if (submitAction === "cancel") {
       router.push("/loft-overview");
+      return;
+    }
+
+    // Prevent submission if there's a duplicate error
+    if (duplicateError) {
+      toast.error(
+        "Cannot submit: A pigeon with this combination already exists!"
+      );
       return;
     }
 
@@ -692,13 +776,44 @@ const AddPigeonContainer = ({ pigeonId }) => {
                       required: "Ring number is required",
                     })}
                     placeholder="Ring Number"
-                    className="w-full px-3 py-[14px] border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-teal-500"
+                    className={`w-full px-3 py-[14px] border rounded-lg focus:outline-none focus:ring-2 focus:ring-teal-500 ${
+                      duplicateError ? "border-red-500" : "border-gray-300"
+                    }`}
                   />
                   {errors.ringNumber && (
                     <p className="text-red-500 text-xs mt-1">
                       {errors.ringNumber.message}
                     </p>
                   )}
+                  {/* Duplicate error message */}
+                  {duplicateError && (
+                    <div className="mt-2 bg-red-50 border border-red-400 text-red-700 px-3 py-2 rounded-lg text-sm">
+                      <div className="flex items-start">
+                        <svg
+                          className="w-4 h-4 mr-2 mt-0.5 flex-shrink-0"
+                          fill="currentColor"
+                          viewBox="0 0 20 20"
+                        >
+                          <path
+                            fillRule="evenodd"
+                            d="M10 18a8 8 0 100-16 8 8 0 000 16zM8.707 7.293a1 1 0 00-1.414 1.414L8.586 10l-1.293 1.293a1 1 0 101.414 1.414L10 11.414l1.293 1.293a1 1 0 001.414-1.414L11.414 10l1.293-1.293a1 1 0 00-1.414-1.414L10 8.586 8.707 7.293z"
+                            clipRule="evenodd"
+                          />
+                        </svg>
+                        <span>{duplicateError}</span>
+                      </div>
+                    </div>
+                  )}
+                  {/* Checking indicator */}
+                  {/* {isCheckingDuplicate && !duplicateError && (
+                    <div className="mt-2 flex items-center text-blue-600 text-sm">
+                      <svg className="animate-spin h-4 w-4 mr-2" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
+                        <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4"></circle>
+                        <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
+                      </svg>
+                      <span>Checking...</span>
+                    </div>
+                  )} */}
                 </div>
 
                 <div>
@@ -1410,7 +1525,7 @@ Bought for USD 50,000`}
           {/* Save Button */}
           <Button
             type="submit"
-            disabled={isLoading}
+            disabled={isLoading || duplicateError || isCheckingDuplicate}
             onClick={() => setSubmitAction("save")}
             className="lg:px-8 py-6 text-white bg-accent hover:bg-accent/80"
           >
@@ -1426,7 +1541,7 @@ Bought for USD 50,000`}
           {!isEditMode && (
             <Button
               type="submit"
-              disabled={isLoading}
+              disabled={isLoading || duplicateError || isCheckingDuplicate}
               onClick={() => setSubmitAction("saveAndAdd")}
               className="lg:px-8 py-6 text-white bg-accent-foreground hover:bg-accent-foreground/80"
             >
@@ -1442,5 +1557,3 @@ Bought for USD 50,000`}
 };
 
 export default AddPigeonContainer;
-
-
