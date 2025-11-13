@@ -1,10 +1,12 @@
 import PigeonContainer from '@/components/pigeon/PigeonContainer'
-import React from 'react'
+import React, { Suspense } from 'react'
 
 const LoftOverview = () => {
   return (
     <div>
-      <PigeonContainer />
+      <Suspense fallback={<div className="p-6">Loading loft overview...</div>}>
+        <PigeonContainer />
+      </Suspense>
     </div>
   )
 }
